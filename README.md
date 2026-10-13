@@ -3,6 +3,11 @@
 A live audio visualizer for the [Omarchy](https://omarchy.org) bar, with a
 left/right balance control.
 
+<p>
+  <img src="screenshots/bars.png" width="49%" alt="Soundscope panel, bars style">
+  <img src="screenshots/wave.png" width="49%" alt="Soundscope panel, wave style">
+</p>
+
 - **In the bar:** a small spectrum that moves with whatever is playing.
 - **Click it:** a panel with a large visualizer (**Bars** or **Wave**), the
   current track, live L/R output meters, and a **balance** slider.
@@ -24,7 +29,7 @@ install hint and starts by itself once cava is installed.
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/<you>/omarchy-soundscope.git --enable
+omarchy plugin add https://github.com/Titas-Ghosh/omarchy-soundscope.git --enable
 ```
 
 It appears in the right side of the bar. Move it with `omarchy bar move`, e.g.
@@ -82,7 +87,7 @@ In `~/.config/omarchy/shell.json`, on the widget's bar entry:
 | Key | Default | Meaning |
 |---|---|---|
 | `bars` | `12` | Number of bars in the bar widget (4–24) |
-| `panelOpacity` | `0.82` | Panel background opacity (0.3–1) |
+| `panelOpacity` | `0.9` | Panel background opacity (0.3–1) |
 
 ## License
 

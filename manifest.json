@@ -13,7 +13,7 @@
     "category": "Audio",
     "allowMultiple": false,
     "defaultSection": "right",
-    "defaults": { "bars": 12, "panelOpacity": 0.82 },
+    "defaults": { "bars": 12, "panelOpacity": 0.9 },
     "schema": [
       { "key": "bars", "type": "number", "label": "Bars shown in the bar" },
       { "key": "panelOpacity", "type": "number", "label": "Panel opacity (0-1)" }

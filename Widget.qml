@@ -22,7 +22,7 @@ Panel {
 
   // ---------------------------------------------------------------- settings
   readonly property int miniBars: Math.max(4, Math.min(24, Number(setting("bars", 12))))
-  readonly property real panelOpacity: Math.max(0.3, Math.min(1, Number(setting("panelOpacity", 0.82))))
+  readonly property real panelOpacity: Math.max(0.3, Math.min(1, Number(setting("panelOpacity", 0.9))))
 
   // ---------------------------------------------------------------- spectrum
   readonly property int bandCount: 48
@@ -85,7 +85,9 @@ Panel {
     var next = new Array(bandCount)
     var any = false
     for (var i = 0; i < bandCount; i++) {
-      var v = Math.min(1, Math.max(0, (parseInt(parts[i], 10) || 0) / 1000))
+      // A gentle curve lifts quiet bands so the display reads as music, not a
+      // flat line, while loud bands still reach the top.
+      var v = Math.pow(Math.min(1, Math.max(0, (parseInt(parts[i], 10) || 0) / 1000)), 0.6)
       next[i] = v
       if (v > 0.01) any = true
     }

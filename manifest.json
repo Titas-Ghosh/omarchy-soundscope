@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "titas.soundscope",
+  "name": "Soundscope",
+  "version": "1.0.0",
+  "author": "Titas Ghosh",
+  "description": "Live audio visualizer in the bar, with a left/right balance control",
+  "kinds": ["bar-widget"],
+  "entryPoints": { "barWidget": "Widget.qml" },
+  "barWidget": {
+    "displayName": "Soundscope",
+    "description": "Live audio visualizer with left/right balance",
+    "category": "Audio",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": { "bars": 12, "panelOpacity": 0.82 },
+    "schema": [
+      { "key": "bars", "type": "number", "label": "Bars shown in the bar" },
+      { "key": "panelOpacity", "type": "number", "label": "Panel opacity (0-1)" }
+    ]
+  }
+}

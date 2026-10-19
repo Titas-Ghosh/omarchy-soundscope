@@ -50,7 +50,15 @@ Panel {
     }
     return false
   }
-  readonly property string balanceSinkName: easyEffectsRunning ? "easyeffects_sink" : (sink ? String(sink.name) : "")
+  // Once EasyEffects has been seen, a missing sink means it is restarting (or
+  // PipeWire is): wait for it rather than moving the balance onto the physical
+  // output, where it would linger after EasyEffects comes back.
+  property bool easyEffectsSeen: false
+  readonly property string balanceSinkName: easyEffectsRunning ? "easyeffects_sink"
+    : (easyEffectsSeen ? "" : (sink ? String(sink.name) : ""))
+  readonly property bool balanceIsRelative: balanceSinkName !== "easyeffects_sink"
+  // The sink we last wrote a balance to, so it can be levelled when we move off it.
+  property string appliedSinkName: ""
 
   readonly property var players: Mpris.players ? Mpris.players.values : []
   readonly property var player: {
@@ -134,13 +142,29 @@ Panel {
     saveTimer.restart()
   }
 
+  // Highest channel volume of a sink, as a bare percentage.
+  readonly property string maxVolumeSh: 'pactl get-sink-volume "$1" | head -1 | grep -o "[0-9]*%" | tr -d % | sort -n | tail -1'
+
   function applyBalance() {
     if (!stateLoaded || balanceSinkName === "") return
+    if (balanceProc.running) { applyTimer.restart(); return }
     var g = channelGains(balance)
-    balanceProc.command = ["pactl", "set-sink-volume", balanceSinkName,
-                           Math.round(g.left * 100) + "%", Math.round(g.right * 100) + "%"]
-    if (balanceProc.running) applyTimer.restart()
-    else balanceProc.running = true
+    var script = ""
+    // Level the sink we are leaving, so no channel stays turned down on it.
+    if (appliedSinkName !== "" && appliedSinkName !== balanceSinkName)
+      script += 'old="$4"; m=$(set -- "$old"; ' + maxVolumeSh + '); [ -n "$m" ] && pactl set-sink-volume "$old" "${m}%"; '
+    if (balanceIsRelative) {
+      // A physical output: keep the user's volume, only tilt it.
+      script += 'm=$(' + maxVolumeSh + '); [ -n "$m" ] || exit 0; '
+        + 'pactl set-sink-volume "$1" "$(( (m * $2 + 50) / 100 ))%" "$(( (m * $3 + 50) / 100 ))%"'
+    } else {
+      // The EasyEffects input: nothing else sets its volume, so 100% is the reference.
+      script += 'pactl set-sink-volume "$1" "$2%" "$3%"'
+    }
+    balanceProc.command = ["sh", "-c", script, "soundscope", balanceSinkName,
+                           String(Math.round(g.left * 100)), String(Math.round(g.right * 100)), appliedSinkName]
+    appliedSinkName = balanceSinkName
+    balanceProc.running = true
   }
 
   function setStyle(s) {
@@ -152,7 +176,10 @@ Panel {
   onBalanceSinkNameChanged: applyTimer.restart()
 
   // EasyEffects rebuilds its sink on restart; re-apply whenever it appears.
-  onEasyEffectsRunningChanged: applyTimer.restart()
+  onEasyEffectsRunningChanged: {
+    if (easyEffectsRunning) easyEffectsSeen = true
+    applyTimer.restart()
+  }
 
   // Scriptable controls, e.g. for keybindings:
   //   omarchy-shell soundscope set -0.2 | nudge 0.05 | center | style wave
